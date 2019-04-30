@@ -1106,6 +1106,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'          => 0,
 				'data_type'         => 'integer',
 				'show_in_admin'     => true,
+				'show_in_rest'      => true,
 				'auth_callback'     => array( __CLASS__, 'auth_check_can_edit_others_job_listings' ),
 				'sanitize_callback' => 'intval',
 			),
@@ -1116,6 +1117,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 1,
 				'data_type'     => 'string',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 			),
 			'_application'     => array(
 				'label'         => __( 'Application Email or URL', 'wp-job-manager' ),
@@ -1124,6 +1126,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 2,
 				'data_type'     => 'string',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 				'sanitize_callback' => 'sanitize_meta_field_application',
 			),
 			'_company_name'    => array(
@@ -1132,6 +1135,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 3,
 				'data_type'     => 'string',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 			),
 			'_company_website' => array(
 				'label'             => __( 'Company Website', 'wp-job-manager' ),
@@ -1139,6 +1143,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'          => 4,
 				'data_type'         => 'string',
 				'show_in_admin'     => true,
+				'show_in_rest'  => true,
 				'sanitize_callback' => 'esc_url_raw',
 			),
 			'_company_tagline' => array(
@@ -1147,6 +1152,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 5,
 				'data_type'     => 'string',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 			),
 			'_company_twitter' => array(
 				'label'         => __( 'Company Twitter', 'wp-job-manager' ),
@@ -1154,6 +1160,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 6,
 				'data_type'     => 'string',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 			),
 			'_company_video'   => array(
 				'label'             => __( 'Company Video', 'wp-job-manager' ),
@@ -1162,6 +1169,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'          => 8,
 				'data_type'         => 'string',
 				'show_in_admin'     => true,
+				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
 			),
 			'_filled'          => array(
@@ -1170,6 +1178,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 9,
 				'data_type'     => 'integer',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 				'description'   => __( 'Filled listings will no longer accept applications.', 'wp-job-manager' ),
 			),
 			'_featured'        => array(
@@ -1179,12 +1188,14 @@ class WP_Job_Manager_Post_Types {
 				'priority'      => 10,
 				'data_type'     => 'integer',
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 				'auth_callback' => array( __CLASS__, 'auth_check_can_manage_job_listings' ),
 			),
 			'_job_expires'     => array(
 				'label'         => __( 'Listing Expiry Date', 'wp-job-manager' ),
 				'priority'      => 11,
 				'show_in_admin' => true,
+				'show_in_rest'  => true,
 				'data_type'     => 'string',
 				'classes'       => array( 'job-manager-datepicker' ),
 				'auth_callback' => array( __CLASS__, 'auth_check_can_manage_job_listings' ),
