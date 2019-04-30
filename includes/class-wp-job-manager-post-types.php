@@ -1080,7 +1080,7 @@ class WP_Job_Manager_Post_Types {
 	/**
 	 * Returns configuration for custom fields on Job Listing posts.
 	 *
-	 * @param int $post_id Post ID for job listing.
+	 * @param int|null $post_id Post ID for job listing when available.
 	 * @return array
 	 */
 	public static function get_job_listing_fields( $post_id ) {
