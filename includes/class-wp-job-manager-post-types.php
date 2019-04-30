@@ -1336,6 +1336,7 @@ class WP_Job_Manager_Post_Types {
 		if ( ! isset( $a['priority'] ) || ! isset( $b['priority'] ) || $a['priority'] === $b['priority'] ) {
 			return 0;
 		}
+
 		return ( $a['priority'] < $b['priority'] ) ? -1 : 1;
 	}
 
