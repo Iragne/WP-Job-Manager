@@ -1143,7 +1143,7 @@ class WP_Job_Manager_Post_Types {
 				'priority'          => 4,
 				'data_type'         => 'string',
 				'show_in_admin'     => true,
-				'show_in_rest'  => true,
+				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
 			),
 			'_company_tagline' => array(
