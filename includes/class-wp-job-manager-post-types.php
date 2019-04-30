@@ -1234,9 +1234,9 @@ class WP_Job_Manager_Post_Types {
 	 * @return mixed
 	 */
 	public static function sanitize_meta_field_based_on_input_type( $meta_value, $meta_key ) {
-		global $post;
+		global $post_id;
 
-		$fields = self::get_job_listing_fields( $post->ID );
+		$fields = self::get_job_listing_fields( $post_id );
 
 		$type = 'text';
 
@@ -1275,26 +1275,6 @@ class WP_Job_Manager_Post_Types {
 		}
 
 		return sanitize_text_field( urldecode( $meta_value ) );
-	}
-
-	/**
-	 * Sanitize `_job_expires` meta field.
-	 *
-	 * @param string $meta_value Value of meta field that needs sanitization.
-	 * @return string
-	 */
-	public static function sanitize_meta_field_job_expires( $meta_value ) {
-		global $post;
-
-		if ( empty( $meta_value ) ) {
-			if ( get_option( 'job_manager_submission_duration' ) && ! empty( $post->ID ) ) {
-				return calculate_job_expiry( $post->ID );
-			} else {
-				return null;
-			}
-		}
-
-		return date( 'Y-m-d', strtotime( sanitize_text_field( $meta_value ) ) );
 	}
 
 	/**
