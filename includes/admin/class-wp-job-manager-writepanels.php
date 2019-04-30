@@ -50,8 +50,29 @@ class WP_Job_Manager_Writepanels {
 	public function job_listing_fields() {
 		global $post;
 
-		$fields = WP_Job_Manager_Post_Types::get_job_listing_fields();
-		$fields = array_filter( $fields, array( $this, 'job_listing_fields_admin_only' ) );
+		$current_user = wp_get_current_user();
+		$fields_raw   = WP_Job_Manager_Post_Types::get_job_listing_fields( $post->ID );
+		$fields       = array();
+
+		foreach ( $fields_raw as $meta_key => $field ) {
+			if ( ! $field['show_in_admin'] ) {
+				continue;
+			}
+
+			/**
+			 * Check auth callback. Mirrors first 4 params of WordPress core's `auth_{$object_type}_meta_{$meta_key}` filter.
+			 *
+			 * @param bool   $allowed   Whether the user can edit the job listing meta. Default false.
+			 * @param string $meta_key  The meta key.
+			 * @param int    $object_id Object ID.
+			 * @param int    $user_id   User ID.
+			 */
+			if ( ! call_user_func( $field['auth_callback'], false, $meta_key, $post->ID, $current_user->ID ) ) {
+				continue;
+			}
+
+			$fields[ $meta_key ] = $field;
+		}
 
 		if ( isset( $fields['_job_expires'] ) && ! isset( $fields['_job_expires']['value'] ) ) {
 			$job_expires = get_post_meta( $post->ID, '_job_expires', true );
@@ -66,23 +87,10 @@ class WP_Job_Manager_Writepanels {
 		}
 
 		if ( isset( $fields['_application'] ) && ! isset( $fields['_application']['default'] ) ) {
-			$current_user                      = wp_get_current_user();
 			$fields['_application']['default'] = $current_user->user_email;
 		}
 
 		return $fields;
-	}
-
-	/**
-	 * Filters to just show admin fields.
-	 *
-	 * @access private Will be removed after PHP lambda functions are allowed.
-	 *
-	 * @param array $field Field config.
-	 * @return bool
-	 */
-	public function job_listing_fields_admin_only( $field ) {
-		return (bool) $field['show_in_admin'];
 	}
 
 	/**

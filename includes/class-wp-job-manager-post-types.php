@@ -1054,10 +1054,10 @@ class WP_Job_Manager_Post_Types {
 	/**
 	 * Returns configuration for custom fields on Job Listing posts.
 	 *
+	 * @param int $post_id Post ID for job listing.
 	 * @return array
 	 */
-	public static function get_job_listing_fields() {
-		$current_user  = wp_get_current_user();
+	public static function get_job_listing_fields( $post_id ) {
 		$default_field = array(
 			'label'         => null,
 			'placeholder'   => null,
@@ -1068,9 +1068,18 @@ class WP_Job_Manager_Post_Types {
 			'type'          => 'text',
 			'data_type'     => 'string',
 			'show_in_admin' => true,
+			'auth_callback' => array( __CLASS__, 'auth_check_can_edit_job_listings' ),
 		);
 
 		$fields = array(
+			'_job_author'      => array(
+				'label'         => __( 'Posted by', 'wp-job-manager' ),
+				'type'          => 'author',
+				'priority'      => 0,
+				'data_type'     => 'integer',
+				'show_in_admin' => true,
+				'auth_callback' => array( __CLASS__, 'auth_check_can_edit_others_job_listings' ),
+			),
 			'_job_location'    => array(
 				'label'         => __( 'Location', 'wp-job-manager' ),
 				'placeholder'   => __( 'e.g. "London"', 'wp-job-manager' ),
@@ -1131,46 +1140,38 @@ class WP_Job_Manager_Post_Types {
 				'show_in_admin' => true,
 				'description'   => __( 'Filled listings will no longer accept applications.', 'wp-job-manager' ),
 			),
-		);
-
-		if ( $current_user->has_cap( 'manage_job_listings' ) ) {
-			$fields['_featured']    = array(
+			'_featured'        => array(
 				'label'         => __( 'Featured Listing', 'wp-job-manager' ),
 				'type'          => 'checkbox',
 				'description'   => __( 'Featured listings will be sticky during searches, and can be styled differently.', 'wp-job-manager' ),
 				'priority'      => 10,
 				'data_type'     => 'integer',
 				'show_in_admin' => true,
-			);
-			$fields['_job_expires'] = array(
+				'auth_callback' => array( __CLASS__, 'auth_check_can_manage_job_listings' ),
+			),
+			'_job_expires'     => array(
 				'label'         => __( 'Listing Expiry Date', 'wp-job-manager' ),
 				'priority'      => 11,
 				'show_in_admin' => true,
 				'data_type'     => 'string',
 				'classes'       => array( 'job-manager-datepicker' ),
-			);
-		}
-
-		if ( $current_user->has_cap( 'edit_others_job_listings' ) ) {
-			$fields['_job_author'] = array(
-				'label'         => __( 'Posted by', 'wp-job-manager' ),
-				'type'          => 'author',
-				'priority'      => 0,
-				'data_type'     => 'integer',
-				'show_in_admin' => true,
-			);
-		}
+				'auth_callback' => array( __CLASS__, 'auth_check_can_manage_job_listings' ),
+			),
+		);
 
 		/**
-		 * Filters job listing data fields.
+		 * Filters visible job listing data fields.
+		 *
+		 * For the REST API, do not pass fields you don't want to be visible to the current visitor when `show_in_rest` is `true`.
 		 *
 		 * @since 1.0.0
 		 * @since 1.27.0 $post_id was added.
-		 * @since 1.33.0 $post_id was removed. Used both in WP admin and REST API.
+		 * @since 1.33.0 Used both in WP admin and REST API.
 		 *
-		 * @param array $fields
+		 * @param array $fields  Job listing fields for REST API and WP admin.
+		 * @param int   $post_id Post ID to get fields for.
 		 */
-		$fields = apply_filters( 'job_manager_job_listing_data_fields', $fields );
+		$fields = apply_filters( 'job_manager_job_listing_data_fields', $fields, $post_id );
 
 		// Ensure default fields are set.
 		foreach ( $fields as $key => $field ) {
@@ -1180,6 +1181,54 @@ class WP_Job_Manager_Post_Types {
 		uasort( $fields, array( __CLASS__, 'sort_by_priority' ) );
 
 		return $fields;
+	}
+
+	/**
+	 * Checks if user can manage job listings.
+	 *
+	 * @param bool   $allowed   Whether the user can edit the job listing meta.
+	 * @param string $meta_key  The meta key.
+	 * @param int    $post_id   Job listing's post ID.
+	 * @param int    $user_id   User ID.
+	 *
+	 * @return bool Whether the user can edit the job listing meta.
+	 */
+	public static function auth_check_can_manage_job_listings( $allowed, $meta_key, $post_id, $user_id ) {
+		$user = get_user_by( 'ID', $user_id );
+
+		return $user->has_cap( 'manage_job_listings' );
+	}
+
+	/**
+	 * Checks if user can edit job listings.
+	 *
+	 * @param bool   $allowed   Whether the user can edit the job listing meta.
+	 * @param string $meta_key  The meta key.
+	 * @param int    $post_id   Job listing's post ID.
+	 * @param int    $user_id   User ID.
+	 *
+	 * @return bool Whether the user can edit the job listing meta.
+	 */
+	public static function auth_check_can_edit_job_listings( $allowed, $meta_key, $post_id, $user_id ) {
+		$user = get_user_by( 'ID', $user_id );
+
+		return $user->has_cap( 'edit_job_listings' );
+	}
+
+	/**
+	 * Checks if user can edit other's job listings.
+	 *
+	 * @param bool   $allowed   Whether the user can edit the job listing meta.
+	 * @param string $meta_key  The meta key.
+	 * @param int    $post_id   Job listing's post ID.
+	 * @param int    $user_id   User ID.
+	 *
+	 * @return bool Whether the user can edit the job listing meta.
+	 */
+	public static function auth_check_can_edit_others_job_listings( $allowed, $meta_key, $post_id, $user_id ) {
+		$user = get_user_by( 'ID', $user_id );
+
+		return $user->has_cap( 'edit_others_job_listings' );
 	}
 
 	/**
