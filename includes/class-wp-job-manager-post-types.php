@@ -1211,8 +1211,8 @@ class WP_Job_Manager_Post_Types {
 		 * @since 1.27.0 $post_id was added.
 		 * @since 1.33.0 Used both in WP admin and REST API.
 		 *
-		 * @param array $fields  Job listing fields for REST API and WP admin.
-		 * @param int   $post_id Post ID to get fields for.
+		 * @param array    $fields  Job listing fields for REST API and WP admin.
+		 * @param int|null $post_id Post ID to get fields for. May be null.
 		 */
 		$fields = apply_filters( 'job_manager_job_listing_data_fields', $fields, $post_id );
 
