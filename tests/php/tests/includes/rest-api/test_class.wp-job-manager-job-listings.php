@@ -140,7 +140,7 @@ class WP_Test_WP_Job_Manager_Job_Listings_Test extends WPJM_REST_TestCase {
 
 		$this->assertResponseStatus( $response, 403 );
 	}
-	
+
 	/**
 	 * @covers WP_Job_Manager_Registrable_Job_Listings::get_fields
 	 */
@@ -154,6 +154,26 @@ class WP_Test_WP_Job_Manager_Job_Listings_Test extends WPJM_REST_TestCase {
 		$this->logout();
 		$response = $this->get( '/wp/v2/job-listings' );
 		$this->assertResponseStatus( $response, 200 );
+	}
+
+	public function test_guest_get_job_listing_meta_fields_success() {
+		$this->logout();
+		$post_id  = $this->get_job_listing();
+		$response = $this->get( sprintf( '/wp/v2/job-listings/%d', $post_id ) );
+		$this->assertResponseStatus( $response, 200 );
+		$this->assertFalse( empty( $response->data['meta'] ) );
+
+		$public_fields  = array( '_job_location', '_application', '_company_name', '_company_website', '_company_tagline', '_company_twitter', '_company_video', '_filled', '_featured' );
+		$private_fields = array( '_job_expires' );
+
+		$this->assertEquals( count( $public_fields ), count( $response->data['meta'] ) );
+		foreach ( $public_fields as $field ) {
+			$this->assertArrayHasKey( $field, $response->data['meta'], sprintf( '%s should be provided in the response meta fields', $field ) );
+		}
+
+		foreach ( $private_fields as $field ) {
+			$this->assertArrayNotHasKey( $field, $response->data['meta'], sprintf( '%s should NOT be provided in the response meta fields', $field ) );
+		}
 	}
 
 	private function get_job_listing( $args = array() ) {
