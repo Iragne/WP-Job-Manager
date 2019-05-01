@@ -96,6 +96,18 @@ class WP_Job_Manager_Writepanels {
 			$fields['_application']['default'] = $current_user->user_email;
 		}
 
+		/**
+		 * Filters job listing data fields shown in WP admin.
+		 *
+		 * To add job listing data fields, use the `job_manager_job_listing_data_fields` found in `includes/class-wp-job-manager-post-types.php`.
+		 *
+		 * @since 1.33.0
+		 *
+		 * @param array    $fields  Job listing fields for WP admin.
+		 * @param int|null $post_id Post ID to get fields for. May be null.
+		 */
+		$fields = apply_filters( 'job_manager_job_listing_wp_admin_fields', $fields, $post_id );
+
 		uasort( $fields, array( __CLASS__, 'sort_by_priority' ) );
 
 		return $fields;
