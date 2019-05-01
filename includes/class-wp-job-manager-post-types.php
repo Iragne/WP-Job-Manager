@@ -1120,14 +1120,14 @@ class WP_Job_Manager_Post_Types {
 				'show_in_rest'  => true,
 			),
 			'_application'     => array(
-				'label'         => __( 'Application Email or URL', 'wp-job-manager' ),
-				'placeholder'   => __( 'URL or email which applicants use to apply', 'wp-job-manager' ),
-				'description'   => __( 'This field is required for the "application" area to appear beneath the listing.', 'wp-job-manager' ),
-				'priority'      => 2,
-				'data_type'     => 'string',
-				'show_in_admin' => true,
-				'show_in_rest'  => true,
-				'sanitize_callback' => 'sanitize_meta_field_application',
+				'label'             => __( 'Application Email or URL', 'wp-job-manager' ),
+				'placeholder'       => __( 'URL or email which applicants use to apply', 'wp-job-manager' ),
+				'description'       => __( 'This field is required for the "application" area to appear beneath the listing.', 'wp-job-manager' ),
+				'priority'          => 2,
+				'data_type'         => 'string',
+				'show_in_admin'     => true,
+				'show_in_rest'      => true,
+				'sanitize_callback' => array( __CLASS__, 'sanitize_meta_field_application' ),
 			),
 			'_company_name'    => array(
 				'label'         => __( 'Company Name', 'wp-job-manager' ),
@@ -1144,7 +1144,7 @@ class WP_Job_Manager_Post_Types {
 				'data_type'         => 'string',
 				'show_in_admin'     => true,
 				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_meta_url' ),
 			),
 			'_company_tagline' => array(
 				'label'         => __( 'Company Tagline', 'wp-job-manager' ),
@@ -1170,7 +1170,7 @@ class WP_Job_Manager_Post_Types {
 				'data_type'         => 'string',
 				'show_in_admin'     => true,
 				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_meta_url' ),
 			),
 			'_filled'          => array(
 				'label'         => __( 'Position Filled', 'wp-job-manager' ),
@@ -1274,7 +1274,22 @@ class WP_Job_Manager_Post_Types {
 			return sanitize_email( $meta_value );
 		}
 
-		return sanitize_text_field( urldecode( $meta_value ) );
+		return self::sanitize_meta_url( $meta_value );
+	}
+
+	/**
+	 * Sanitize URL meta fields.
+	 *
+	 * @param string $meta_value Value of meta field that needs sanitization.
+	 * @return string
+	 */
+	public static function sanitize_meta_url( $meta_value ) {
+		$meta_value = trim( $meta_value );
+		if ( '' === $meta_value ) {
+			return $meta_value;
+		}
+
+		return esc_url_raw( $meta_value );
 	}
 
 	/**
