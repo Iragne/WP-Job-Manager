@@ -1240,6 +1240,8 @@ class WP_Job_Manager_Post_Types {
 
 		$type = 'text';
 
+		$meta_value = trim( $meta_value );
+
 		if ( isset( $fields[ $meta_key ] ) ) {
 			$type = $fields[ $meta_key ]['type'];
 		}
@@ -1249,7 +1251,7 @@ class WP_Job_Manager_Post_Types {
 		}
 
 		if ( 'checkbox' === $type ) {
-			if ( $meta_value ) {
+			if ( $meta_value && '0' !== $meta_value ) {
 				return 1;
 			}
 
