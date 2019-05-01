@@ -61,7 +61,12 @@ class WP_Job_Manager_Writepanels {
 		);
 
 		foreach ( $fields_raw as $meta_key => $field ) {
-			if ( ! $field['show_in_admin'] ) {
+			$show_in_admin = $field['show_in_admin'];
+			if ( is_callable( $show_in_admin ) ) {
+				$show_in_admin = (bool) call_user_func( $show_in_admin, true, $meta_key, $post_id, $current_user->ID );
+			}
+
+			if ( ! $show_in_admin ) {
 				continue;
 			}
 
