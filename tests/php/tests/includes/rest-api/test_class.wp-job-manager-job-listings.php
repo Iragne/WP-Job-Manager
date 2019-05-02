@@ -156,7 +156,10 @@ class WP_Test_WP_Job_Manager_Job_Listings_Test extends WPJM_REST_TestCase {
 		$this->assertResponseStatus( $response, 200 );
 	}
 
-	public function test_guest_get_job_listing_meta_fields_success() {
+	/**
+	 * Tests to make sure public meta fields are exposed to guest users and private meta fields are hidden.
+	 */
+	public function test_get_job_listing_meta_fields_guest() {
 		$this->logout();
 		$post_id  = $this->get_job_listing();
 		$response = $this->get( sprintf( '/wp/v2/job-listings/%d', $post_id ) );
@@ -176,7 +179,54 @@ class WP_Test_WP_Job_Manager_Job_Listings_Test extends WPJM_REST_TestCase {
 		}
 	}
 
+	public function test_get_job_listing_meta_fields_same_employer() {
+		$this->login_as_employer();
+		$post_id  = $this->get_job_listing();
+		$response = $this->get( sprintf( '/wp/v2/job-listings/%d', $post_id ) );
+		$this->assertResponseStatus( $response, 200 );
+		$this->assertFalse( empty( $response->data['meta'] ) );
+
+		$available_fields  = array( '_job_location', '_application', '_company_name', '_company_website', '_company_tagline', '_company_twitter', '_company_video', '_filled', '_featured',  '_job_expires' );
+
+		$this->assertEquals( count( $available_fields ), count( $response->data['meta'] ) );
+		foreach ( $available_fields as $field ) {
+			$this->assertArrayHasKey( $field, $response->data['meta'], sprintf( '%s should be provided in the response meta fields', $field ) );
+		}
+	}
+
+	public function test_get_job_listing_meta_fields_different_employer() {
+		$this->login_as_employer();
+		$post_id  = $this->get_job_listing();
+		$this->login_as_employer_b();
+		$response = $this->get( sprintf( '/wp/v2/job-listings/%d', $post_id ) );
+		$this->assertResponseStatus( $response, 200 );
+		$this->assertFalse( empty( $response->data['meta'] ) );
+
+		$public_fields  = array( '_job_location', '_application', '_company_name', '_company_website', '_company_tagline', '_company_twitter', '_company_video', '_filled', '_featured' );
+		$private_fields = array( '_job_expires' );
+
+		$this->assertEquals( count( $public_fields ), count( $response->data['meta'] ) );
+		foreach ( $public_fields as $field ) {
+			$this->assertArrayHasKey( $field, $response->data['meta'], sprintf( '%s should be provided in the response meta fields', $field ) );
+		}
+
+		foreach ( $private_fields as $field ) {
+			$this->assertArrayNotHasKey( $field, $response->data['meta'], sprintf( '%s should NOT be provided in the response meta fields', $field ) );
+		}
+	}
+
 	private function get_job_listing( $args = array() ) {
 		return $this->factory()->job_listing->create_and_get( $args )->ID;
+	}
+
+	public function reset_meta_keys() {
+		global $wp_meta_keys;
+
+		unset( $wp_meta_keys['post']['job_listing'] );
+	}
+
+	protected function beforeRequest() {
+		$this->reset_meta_keys();
+		WP_Job_Manager_Post_Types::instance()->register_meta_fields();
 	}
 }
