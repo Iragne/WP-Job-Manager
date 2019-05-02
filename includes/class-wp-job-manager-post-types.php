@@ -1320,7 +1320,7 @@ class WP_Job_Manager_Post_Types {
 			return false;
 		}
 
-		return current_user_can( 'edit_post', $post_id );
+		return job_manager_user_can_edit_job( $post_id );
 	}
 
 	/**
